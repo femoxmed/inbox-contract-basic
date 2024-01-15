@@ -1,38 +1,36 @@
 const assert = require('assert');
 const ganache = require('ganache');
 const { Web3 } = require('web3');
-// const { bytecode, interface } = require('../compile')
-const { abi, evm } = require('./compile');
-const bytecode = evm.bytecode.object;
 const web3 = new Web3(ganache.provider());
+
+const { abi, evm } = require('../compile');
+
 let accounts;
 let inbox;
-const initial_message = 'Hi there!'
-beforeEach(async () => {
-    //get a list of account
-    accounts  = await web3.eth.getAccounts()
-        
-    inbox = await new web3.eth.Contract(abi)
-        .deploy({ data: bytecode, arguments: [initial_message] })
-        .send({ from: accounts[0], gas: '1000000'})
 
-    //use one fo those accounts to deploy the contracts
+beforeEach(async () => {
+  const bytecode = evm.bytecode.object;
+  // Get a list of all accounts
+  accounts = await web3.eth.getAccounts();
+  inbox = await new web3.eth.Contract(abi)
+    .deploy({
+      data: bytecode,
+      arguments: ['Hi there!'],
+    })
+    .send({ from: accounts[0], gas: '1000000' });
 });
 
-describe("Inbox", () => {
-    it('deploys a contract', () => {
-        console.log(inbox);
-        assert.ok(inbox.options.address)
-    });
-
-    it('It has an initial message', async () => {
-        const message = await inbox.methods.message().call();
-        assert.equal(message, initial_message)
-    })
-
-    it('Updates message attribute', async () => {
-        await inbox.methods.setMessage('bye').send({ from: accounts[0] });
-        const message = await inbox.methods.message().call();
-        assert.equal(message, 'bye')
-    })
+describe('Inbox', () => {
+  it('deploys a contract', () => {
+    assert.ok(inbox.options.address);
+  });
+  it('has a default message', async () => {
+    const message = await inbox.methods.message().call();
+    assert.equal(message, 'Hi there!');
+  });
+  it('can change the message', async () => {
+    await inbox.methods.setMessage('bye').send({ from: accounts[0] });
+    const message = await inbox.methods.message().call();
+    assert.equal(message, 'bye');
+  });
 });

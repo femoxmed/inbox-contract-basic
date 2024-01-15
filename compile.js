@@ -14,12 +14,8 @@ const input = {
       outputSelection: { '*': { '*': ['*'] } }
     }
   };
-
-  const { contracts } = JSON.parse(
-    solc.compile(JSON.stringify(input))
-  );
-
-const contract = contracts['Inbox.sol'].Inbox;
-
+console.log(JSON.parse(solc.compile(JSON.stringify(input))))
 // Export the entire contract object
-module.exports = contract
+module.exports = JSON.parse(solc.compile(JSON.stringify(input))).contracts[
+  'Inbox.sol'
+].Inbox;
